@@ -1,0 +1,83 @@
+blueprint:
+  name: Motion-activated Light (off + interrupt)
+  description: Turn on a light, if it is off, when motion is detected and stop light deactivation if in the meantime light is turned on manually.
+  domain: automation
+  source_url: https://github.com/qhga/ha_blueprints/motion_light_if_off_manual_interrupt.yml
+  author: phga
+  input:
+    motion_entity:
+      name: Motion Sensor
+      selector:
+        entity:
+          filter:
+            device_class: motion
+            domain: binary_sensor
+    light_target:
+      name: Light
+      selector:
+          entity:
+            filter:
+              domain: light
+    motion_sensor_interrupt_variable:
+      name: Interrupt Variable
+      description: Variable (bool) that is used to interrupt the automation from turning the light off if in the meantime the light got turned on manually (e.g. via a smart switch)
+      selector:
+        entity:
+          filter:
+            domain: input_boolean
+    no_motion_wait:
+      name: Wait Time
+      description: Time to leave the light on after last motion is detected.
+      default: 10
+      selector:
+        number:
+          min: 0
+          max: 600
+          unit_of_measurement: seconds
+
+# If motion is detected within the delay,
+# we restart the script.
+mode: restart
+max_exceeded: silent
+
+trigger:
+  platform: state
+  entity_id: !input motion_entity
+  from: "off"
+  to: "on"
+
+condition:
+  condition: state
+  entity_id: !input light_target
+  state: 'off'
+
+action:
+  - service: input_boolean.turn_off
+    target:
+      entity_id: !input motion_sensor_interrupt_variable
+  - service: light.turn_on
+    target:
+      entity_id: !input light_target
+  - repeat:
+      sequence:
+        - if:
+            - condition: state
+              entity_id: !input motion_sensor_interrupt_variable
+              state: "on"
+          then:
+            - stop: Light in this area turned on manually
+        - delay:
+            hours: 0
+            minutes: 0
+            seconds: 1
+            milliseconds: 0
+      until:
+        - condition: state
+          entity_id: !input motion_entity
+          state: "off"
+          for: !input no_motion_wait
+  - service: light.turn_off
+    target:
+      entity_id: !input light_target
+mode: restart
+max_exceeded: silent
