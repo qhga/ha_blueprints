@@ -2,7 +2,6 @@ blueprint:
   name: Motion-activated Light (if off)
   description: Turn on a light, if it is off, when motion is detected.
   domain: automation
-  source_url: https://github.com/qhga/ha_blueprints/motion_light_if_off.yml
   author: phga
   input:
     motion_entity:

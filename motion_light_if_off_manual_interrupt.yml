@@ -2,7 +2,6 @@ blueprint:
   name: Motion-activated Light (off + interrupt)
   description: Turn on a light, if it is off, when motion is detected and stop light deactivation if in the meantime light is turned on manually.
   domain: automation
-  source_url: https://github.com/qhga/ha_blueprints/motion_light_if_off_manual_interrupt.yml
   author: phga
   input:
     motion_entity:
