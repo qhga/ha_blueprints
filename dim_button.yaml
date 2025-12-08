@@ -1,4 +1,4 @@
-# Make sure the knob is in "command mode" in zigbee2mqtt
+# Make sure the knob is in "command mode" in zigbee2mqtt (triple tap the button)
 # Otherwise it only reports singe, double, rotate_left/right, etc.
 blueprint:
   name: Dimmer X
