@@ -1,0 +1,76 @@
+# Make sure the knob is in "command mode" in zigbee2mqtt
+# Otherwise it only reports singe, double, rotate_left/right, etc.
+blueprint:
+  name: Dimmer X
+  description: Dim and toggle lights
+  domain: automation
+  author: phga
+  input:
+    mqtt_topic:
+      name: MQTT Motion Sensor Topic
+      selector:
+        text:
+          prefix: zigbee2mqtt/
+    light_target:
+      name: Light
+      selector:
+          entity:
+            filter:
+              domain: light
+    brightness_step:
+      name: Brightness Step %
+      description: Value for the brightness step in percent (default is 5%).
+      default: 5
+      selector:
+        number:
+          min: 1
+          max: 10
+
+mode: single
+
+triggers:
+  - trigger: mqtt
+    options:
+      topic: !input mqtt_topic
+conditions: []
+actions:
+  - if:
+      - condition: template
+        value_template: "{{ trigger.payload_json.action != 'toggle' }}"
+    then:
+      - variables:
+          brightness_step: !input brightness_step
+          brightness_pct: "{{ trigger.payload_json.action_step_size // 13 * brightness_step }}"
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ trigger.payload_json.action == 'toggle' }}"
+        sequence:
+          - action: light.toggle
+            metadata: {}
+            data: {}
+            target:
+              entity_id: !input light_target
+      - conditions:
+          - condition: template
+            value_template:
+              "{{ trigger.payload_json.action == 'brightness_step_up' }}"
+        sequence:
+          - action: light.turn_on
+            metadata: {}
+            target:
+              entity_id: !input light_target
+            data:
+              brightness_step_pct: "{{ brightness_pct }}"
+      - conditions:
+          - condition: template
+            value_template:
+              "{{ trigger.payload_json.action == 'brightness_step_down' }}"
+        sequence:
+          - action: light.turn_on
+            metadata: {}
+            target:
+              entity_id: !input light_target
+            data:
+              brightness_step_pct: "{{ -brightness_pct }}"
+
