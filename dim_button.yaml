@@ -1,5 +1,6 @@
 # Make sure the knob is in "command mode" in zigbee2mqtt (triple tap the button)
 # Otherwise it only reports singe, double, rotate_left/right, etc.
+# Unfortunately, mqtt topics do not support templating :(
 blueprint:
   name: Dimmer X
   description: Dim and toggle lights
@@ -8,9 +9,9 @@ blueprint:
   input:
     mqtt_topic:
       name: MQTT Motion Sensor Topic
+      description: Add 'zigbee2mqtt/' as the topics prefix
       selector:
         text:
-          prefix: zigbee2mqtt/
     light_target:
       name: Light
       selector:
